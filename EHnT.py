@@ -1,5 +1,5 @@
 from unitfunctions import *
-import re
+# import re
 
 """
 process_all_db(find={
@@ -51,7 +51,7 @@ qd_dict = {}
 nfound = []
 
 process_all_db(find={'wikidata': {"$exists": True}},
-               functions=[Qdata],
+               functions=[q_data],
                attributes={"qd": qd_dict})
 
 for k, v in qd_dict.items():
@@ -62,4 +62,3 @@ for k, v in qd_dict.items():
 
 print("not found the following: "+str(nfound))
 print(qd_dict)
-
