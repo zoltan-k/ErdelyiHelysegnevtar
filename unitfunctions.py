@@ -338,6 +338,49 @@ def wikidata_instances(data, wdi=None, *_, **__):
     return data
 
 
+def fs_place_from_wd(data, show=False,  *_, **__):
+    fs_wd_place_type_map = {
+        'Q532': "Village",
+        'Q659103': "Village",
+        "Q15921247": "Village",
+        "Q3257686": "Village",
+        "Q486972": "Village",
+        'Q640364': "Municipality",
+        'Q1549591': "City",
+        'Q16858213': "Town",
+        "Q123705": "Neighborhood or suburb",
+        "Q2983893": "Neighborhood or suburb",
+    }
+    if show:
+        print(data["primary_name"])
+    if "wikidata" not in data:
+        return data
+    if "instance-of" not in data["wikidata"]:
+        return data
+    if "fs" not in data:
+        data["fs"] = {}
+
+    for k in fs_wd_place_type_map:
+        if k in data["wikidata"]["instance-of"]:
+            data["fs"]["place_type"] = fs_wd_place_type_map[k]
+            break
+
+    if show:
+        print(data["primary_name"] + ": FS place type: " +
+              data["fs"].get("place_type", "Not found Type:" + str(data["wikidata"]["instance-of"])))
+    return data
+
+
+def q_data(data, qd=None, *_, **__):
+    if "wikidata" not in data:
+        return data
+
+    if data["wikidata"].get("id") not in qd:
+        qd[data["wikidata"].get("id")] = []
+    qd[data["wikidata"].get("id")] += data["wikidata"].get("located-in", [])
+    return data
+
+
 def reorg(data, order=None, *_, **__):
     if order is None:
         order = ['_id', 'primary_name', 'county', 'names', 'part-of', 'commune', 'region',
