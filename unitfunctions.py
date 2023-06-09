@@ -21,9 +21,9 @@ language_map = {"ro": "ro", "hu": "hu", "g": "de", "s": "sx", "jid": "yi", "y": 
                 "pol": "pl", "tr": "tr", "l": "la", "gr": "el", "ukr": "uk"}
 
 languages = []
-for x in language_map.values():
-    if x not in languages:
-        languages.append(x)
+for lang in language_map.values():
+    if lang not in languages:
+        languages.append(lang)
 all_keys = []
 
 
@@ -53,10 +53,10 @@ def dump(data, *_, **__):
     return data
 
 
-def table_out(data, table=None, html=False, *_, **__):
+def table_out(data, table=None, *_, **__):
     """ try printing the data in a table form for the console
         will accept a key:value dictionary, where each key is a field name, and value is the column width.
-        For fields you can specify regular field, an array field (all entries will be printed in width size columns)
+        For fields, you can specify regular field, an array field (all entries will be printed in width size columns)
         as well as dot separated definitions for nested entries. i.e. sources.wikipedia
     """
     if data is None:
@@ -64,7 +64,7 @@ def table_out(data, table=None, html=False, *_, **__):
     if table is not None:
         for (t_col, col_width) in table.items():
             if "." in t_col:
-                x = getItem(data, t_col.split("."))
+                x = get_item(data, t_col.split("."))
                 if type(x) in (tuple, list):
                     print("|", end='')
                     for y in x:
@@ -105,16 +105,16 @@ def clear_ro(data, show=False, *_, **__):
 
 def regions_hu(data, show=False, *_, **__):
     """extract region names from hungarian name field"""
-    hug = re.match(r"^(.*)\[([^\]]+)\](.*)$",data.get('hu',""))
+    hug = re.match(r"^(.*)\[([^]]+)](.*)$", data.get('hu', ""))
     if hug:
         data["hu"] = hug.group(1).strip()
         if hug.group(3):
-            data["hu"] += " "+hug.group(3)
+            data["hu"] += " " + hug.group(3)
         if "region" not in data.keys():
-            data["region"]={}
+            data["region"] = {}
         data["region"]["hu"] = hug.group(2)
         if show:
-            print('Regio = %s' % (data['region']['hu']))
+            print('Region = %s' % (data['region']['hu']))
     else:
         if show:
             print('Region not found')
@@ -123,32 +123,32 @@ def regions_hu(data, show=False, *_, **__):
 
 def regions_de(data, show=False, *_, **__):
     """extract region names from german name field"""
-    de_names = ','.join(data.get('de', [])).replace("\n","")
-    deg = re.match(r"^(.*)\[\ *(in )?([^\]]+)\]$", de_names)
+    de_names = ','.join(data.get('de', [])).replace("\n", "")
+    deg = re.match(r"^(.*)\[ *(in )?([^]]+)]$", de_names)
     if deg:
         data["de"] = [x.strip() for x in deg.group(1).split(",")]
         if "region" not in data.keys():
-            data["region"]={}
-        data["region"]["de"] = deg.group(3).replace("in ","").strip()
+            data["region"] = {}
+        data["region"]["de"] = deg.group(3).replace("in ", "").strip()
         if show:
-            print('Regio = %s' % (data['region']['de']))
+            print('Region = %s' % (data['region']['de']))
     else:
         if show:
             print('Region not found')
     return data
 
 
-def clean_hu(data, show=False, *_, **__):
+def clean_hu(data, *_, **__):
     """extract region names from hungarian name field"""
-    hug = re.match(r"^(.*?), ([0-9]{4}.*)$",data.get('hu',""))
+    hug = re.match(r"^(.*?), ([0-9]{4}.*)$", data.get('hu', ""))
     if hug:
         data["hu"] = hug.group(1).strip()
         data["names"][1] = hug.group(1).strip()
-        data["names"].insert(2,hug.group(2).strip())
+        data["names"].insert(2, hug.group(2).strip())
     return data
 
 
-def split_hu(data, show=False, *_, **__):
+def split_hu(data, *_, **__):
     """split hungarian name field into array"""
     hu_array = [x.strip() for x in data["hu"].split(",")]
     data["hu"] = hu_array
@@ -163,54 +163,51 @@ def strip_all(data, *_, **__):
         elif type(data[key]) is dict:
             data[key] = strip_all(data[key])
         else:
-            try:
-                data[key] = data[key].strip()
-            except:
-                continue
+            data[key] = data[key].strip()
     return data
 
 
 def language_variants(data, show=False, *_, **__):
     """ Should break out language variant from name array."""
     for i, n in enumerate(data["names"]):
-        lang = re.search(r"^([^0-9][^\(]*)\(([a-z]+\.?)\)$", n)
+        language = re.search(r"^([^0-9][^(]*)\(([a-z]+\.?)\)$", n)
         if not lang:
             continue
-        if lang.group(2).strip(".").lower() not in language_map.keys():
+        if language.group(2).strip(".").lower() not in language_map.keys():
             if show:
-                print("Unexpected language %s" % lang.group(2))
+                print("Unexpected language %s" % language.group(2))
             continue
-        cc = language_map[lang.group(2).strip(".").lower()]
-        #if show:
-            # print(lang.group(1))
-        data[cc] = re.split(",", lang.group(1))
+        cc = language_map[language.group(2).strip(".").lower()]
+        # if show:
+        # print(lang.group(1))
+        data[cc] = re.split(",", language.group(1))
 
     return data
 
 
-def part_of(data, show=False, *_, **__):
-    for lang in languages:
+def get_part_of(data, *_, **__):
+    for language in languages:
         for k, nv in enumerate(data.get(lang, [])):
-            partOf = re.search(r"^(.*)∩(.*)$", nv)
-            if not partOf:
+            part_of = re.search(r"^(.*)∩(.*)$", nv)
+            if not part_of:
                 continue
-            data[lang][k] = partOf.group(1).strip()
+            data[language][k] = part_of.group(1).strip()
             if "part-of" not in data:
-                data["part-of"]={}
-            data["part-of"][lang]=partOf.group(2).strip()
+                data["part-of"] = {}
+            data["part-of"][language] = part_of.group(2).strip()
     return data
 
 
-def commune(data, show=False, *_, **__):
-    for lang in languages:
+def commune(data, *_, **__):
+    for language in languages:
         for k, nv in enumerate(data.get(lang, [])):
-            partOf = re.search(r"^(.*)#(.*)$", nv)
-            if not partOf:
+            part_of = re.search(r"^(.*)#(.*)$", nv)
+            if not part_of:
                 continue
-            data[lang][k] = partOf.group(1).strip()
+            data[language][k] = part_of.group(1).strip()
             if "commune" not in data:
                 data["commune"] = {}
-            data["commune"][lang] = partOf.group(2).strip()
+            data["commune"][language] = part_of.group(2).strip()
     return data
 
 
@@ -307,7 +304,7 @@ def wikidata(data, show=False, try_wiki_url=False, *_, **__):
     return data
 
 
-def wiki_from_data(data,*_, **__):
+def wiki_from_data(data, *_, **__):
     if "wikipedia" in data["sources"]:
         return data
     if "wikidata" not in data:
@@ -319,7 +316,7 @@ def wiki_from_data(data,*_, **__):
     return data
 
 
-def get_allkeys(data, *_, **__):
+def get_all_keys(data, *_, **__):
     if "part-of" not in data:
         return data
     for k in data["part-of"].keys():
@@ -343,7 +340,7 @@ def wikidata_instances(data, wdi=None, *_, **__):
 
 def reorg(data, order=None, *_, **__):
     if order is None:
-        order = ['_id', 'primary_name', 'county', 'names', 'part-of', 'commune',  'region',
+        order = ['_id', 'primary_name', 'county', 'names', 'part-of', 'commune', 'region',
                  'names_raw', 'administrative', 'sources', 'wikipedia_response_status']
     reordered_data = {k: data.get(k) for k in order if data.get(k)}
     return reordered_data
@@ -353,10 +350,10 @@ def names_reorg(data, *_, **__):
     n_raw = data["names"]
 
     data["names"] = {}
-    for lang in languages:
-        if data.get(lang):
-            data["names"][lang] = data.get(lang)
-            del data[lang]
+    for language in languages:
+        if data.get(language):
+            data["names"][language] = data.get(language)
+            del data[language]
     data["names_raw"] = n_raw
 
     return data
@@ -365,10 +362,10 @@ def names_reorg(data, *_, **__):
 def data_filter(data, d_filter=None, regex=False, case_sensitive=False, *_, **__):
     if (d_filter is None) or (data is None):
         return data
-    for key,value in data.items():
+    for key, value in data.items():
         if isinstance(value, str):
             if regex:
-                if re.search(d_filter,value, re.IGNORECASE * (not case_sensitive)):
+                if re.search(d_filter, value, re.IGNORECASE * (not case_sensitive)):
                     return data
             elif case_sensitive:
                 if d_filter in value:
@@ -391,7 +388,7 @@ def data_filter(data, d_filter=None, regex=False, case_sensitive=False, *_, **__
                         if d_filter.casefold() in val.casefold():
                             return data
                 elif isinstance(val, list):
-                    data_filter(val.enumerate(), d_filter, regex, case_sensitive)
+                    data_filter({i: val[i] for i in range(len(val))}, d_filter, regex, case_sensitive)
                 else:
                     data_filter(val, d_filter, regex, case_sensitive)
     return None

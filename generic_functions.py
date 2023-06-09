@@ -15,7 +15,7 @@ collection = db["Places"]
 w = wikipediaapi.Wikipedia('ro')
 pwb_site = pywikibot.Site('ro', "wikipedia")
 mindenfalu_urls = []
-mywdi = {}
+my_wdi = {}
 
 
 def readme(place_id, read_db=True):
@@ -82,7 +82,7 @@ def process_all_db(
         find='', limit=0, write=False, functions=None, attributes=None,
         show=False, throttle=None, sort_field="_id", sort_asc=True):
     """
-    Parse all documents in mongodb (optionally, matching a filter) and execute one or more funtions on each.
+    Parse all documents in mongodb (optionally, matching a filter) and execute one or more functions on each.
     Arguments:
         find: mongodb filter
         limit: only parse maximum this many at once
@@ -118,7 +118,7 @@ def process_all_db(
         print("|")
     for falu in collection.find(find).sort([(sort_field, sort_dir)]).limit(limit):
         # if show:
-            # print("Working on: %s" % (falu["_id"]))
+        #   print("Working on: %s" % (falu["_id"]))
         temp = falu
         for f in functions:
             if temp:  # expect functions with negative results. they should return False then.
@@ -144,9 +144,9 @@ def get_all_urls():
         mindenfalu_urls = fp.readlines()
 
 
-def delete_from_file(fname, text_filter='nothing'):
-    """Delete a line matching _text_filter_ from a file called _fname_. Simple search """
-    with open(fname, "r+") as f:
+def delete_from_file(file_name, text_filter='nothing'):
+    """Delete a line matching _text_filter_ from a file called _file_name_. Simple search """
+    with open(file_name, "r+") as f:
         d = f.readlines()
         f.seek(0)
         for i in d:
@@ -155,7 +155,7 @@ def delete_from_file(fname, text_filter='nothing'):
         f.truncate()
 
 
-def getItem(my_dict, map):
+def get_item(my_dict, item_map):
     """ Return a nested value from a dictionary and/or list in a dot-notated format, where only keys are mentioned.
         if the nested element is a list, the key value should be a number
         ie:
@@ -164,11 +164,11 @@ def getItem(my_dict, map):
             sources.fs_place.0
         Arguments:
             my_dict: dictionary (or list) to search in
-            map: dot-separated list of keys, such as above
+            item_map: dot-separated list of keys, such as above
     """
-    if type(map) not in (tuple, list) and "." in map:
-        map = map.split('.')
-    for i in map:
+    if type(item_map) not in (tuple, list) and "." in item_map:
+        item_map = item_map.split('.')
+    for i in item_map:
         if type(my_dict) is dict:
             my_dict = my_dict.get(i)
         elif type(my_dict) is list:
@@ -181,7 +181,6 @@ def getItem(my_dict, map):
 
 def get_wikipedia_url_from_wikidata_id(wikidata_id, lang='en', debug=False):
     import requests
-    from requests import utils
 
     url = (
         'https://www.wikidata.org/w/api.php'
@@ -190,7 +189,8 @@ def get_wikipedia_url_from_wikidata_id(wikidata_id, lang='en', debug=False):
         f'&ids={wikidata_id}'
         '&format=json')
     json_response = requests.get(url).json()
-    if debug: print(wikidata_id, url, json_response)
+    if debug:
+        print(wikidata_id, url, json_response)
 
     entities = json_response.get('entities')
     if entities:
@@ -200,24 +200,24 @@ def get_wikipedia_url_from_wikidata_id(wikidata_id, lang='en', debug=False):
             if sitelinks:
                 if lang:
                     # filter only the specified language
-                    sitelink = sitelinks.get(f'{lang}wiki')
-                    if sitelink:
-                        wiki_url = sitelink.get('url')
+                    site_link = sitelinks.get(f'{lang}wiki')
+                    if site_link:
+                        wiki_url = site_link.get('url')
                         if wiki_url:
                             return wiki_url
                 else:
-                    # return all of the urls
+                    # return all the urls
                     wiki_urls = {}
-                    for key, sitelink in sitelinks.items():
-                        wiki_url = sitelink.get('url')
+                    for key, site_link in sitelinks.items():
+                        wiki_url = site_link.get('url')
                         if wiki_url:
-                            wiki_urls[key] = requests.utils.unquote(wiki_url)
+                            wiki_urls[key] = wiki_url
                     return wiki_urls
     return None
 
 
 def count_instances():
-    counter = {k: len(mywdi[k]) for k in mywdi.keys()}
+    counter = {k: len(my_wdi[k]) for k in my_wdi.keys()}
     wd_site = pywikibot.Site("wikidata", "wikidata")
     pwb_repo = wd_site.data_repository()
 
@@ -228,22 +228,21 @@ def count_instances():
             "label_en": pwb_item.labels["en"],
             "count": v}
         if k not in ["Q532", "Q16858213", "Q34841063", "Q15921247", "Q640364"]:
-            counter[k]["items"] = mywdi[k]
-            counter[k]["item_URIs"] = ["https://www.wikidata.org/wiki/" + i.split("|")[0] for i in mywdi[k]]
+            counter[k]["items"] = my_wdi[k]
+            counter[k]["item_URIs"] = ["https://www.wikidata.org/wiki/" + i.split("|")[0] for i in my_wdi[k]]
 
     print(json.dumps(counter, ensure_ascii=False, indent=4))
 
 
-def get_place(name, fuzzy=True, **qargs):
+def get_place(name, fuzzy=True, **q_args):
     headers = {
         'Accept': 'application/json'}
     if fuzzy:
         name = name + "~"
     url = "https://api.familysearch.org/platform/places/search"
     q = "name:" + name
-    for (k, v) in qargs.items():
+    for (k, v) in q_args.items():
         q += f" {k}:{v}"
     url += f"?q={html.escape(q)}"
     re = httpx.get(url, headers=headers)
     return re.json()
-

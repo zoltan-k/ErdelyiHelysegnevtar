@@ -34,7 +34,7 @@ count the wikidata instance-of attributes:
 """
 process_all_db(find={'wikipedia_response_status': 200},
                functions=[wikidata_instances],
-               attributes={"wdi": mywdi},
+               attributes={"wdi": my_wdi},
                show=False,
                write=False)
 count_instances()
