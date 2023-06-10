@@ -304,6 +304,27 @@ def wikidata(data, show=False, try_wiki_url=False, *_, **__):
     return data
 
 
+def wikidata_commune_or_county(data, show=False, *_, **__):
+    if "wikidata" not in data.keys():
+        return None
+    if "located-in" not in data["wikidata"]:
+        return None
+    for inside in data["wikidata"]["located-in"]:
+        pwd_item = pywikibot.ItemPage(pwd_site.data_repository(), inside)
+        if show:
+            print("%s, %s: located-in QID: %s" % (data["primary_name"], data["county"], pwd_item.id))
+        claims = pwd_item.get('properties').get("claims", [])
+        for i in claims.get("P31", []):
+            instances_of = i.getTarget().id
+            if "Q659103" == instances_of:
+                data["wikidata"]["commune_id"] = inside
+            elif "Q1776764" == instances_of:
+                data["wikidata"]["county_id"] = inside
+    if show:
+        print(data['wikidata'])
+    return data
+
+
 def wiki_from_data(data, *_, **__):
     if "wikipedia" in data["sources"]:
         return data
@@ -464,6 +485,15 @@ def eliminate(data, show=False, *_, **__):
     os.remove("JsonDumps/" + data["_id"] + ".json")
     # delete from database
     collection.delete_one({"_id": data["_id"]})
+
+
+def aggregate_looper(agg_data, show=False, agg_functions=None, agg_attributes=None, agg_write=False, *_, **__):
+    process_all_db(find={"wikidata.id": agg_data["_id"], "part-of": {"$exists": True}},
+                   functions=agg_functions,
+                   attributes=agg_attributes,
+                   show=show,
+                   write=agg_write)
+    return None
 
 
 def get_places_primary(data, show=False, fuzzy=True, *_, **__):

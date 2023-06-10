@@ -4,6 +4,8 @@ import wikipediaapi
 import pywikibot
 import httpx
 import html
+import os
+import shutil
 from time import sleep
 from config import *
 
@@ -14,6 +16,7 @@ db = client["ErdelyHNT"]
 collection = db["Places"]
 w = wikipediaapi.Wikipedia('ro')
 pwb_site = pywikibot.Site('ro', "wikipedia")
+pwd_site = pywikibot.Site('wikidata', 'wikidata')
 mindenfalu_urls = []
 my_wdi = {}
 
@@ -40,6 +43,8 @@ def write_to_file(data, show=False, *_, **__):
 
 def write_to_db(data, show=False, *_, **__):
     """update the data in the DB"""
+    if "_id" not in data:
+        return None
     collection.replace_one({"_id": data["_id"]}, data, upsert=True)
     if show:
         print("written " + data["_id"] + " to db")
@@ -78,9 +83,33 @@ def process_all(limit=None, start_at=None, write=False, function=None, functions
         print('Processed: %s' % counter)
 
 
+def restore_db_from_json_dumps():
+    collection.delete_many({})
+    os.remove("mindenfalu_full_list.txt")
+    with open('falu_ids.txt', mode='wt', encoding='utf-8') as my_file:
+        my_file.write('\n'.join([x.name.replace(".json", "") for x in(os.scandir("JsonDumps/")) if "json" in x.name]))
+    process_all(functions=[write_to_db, add_to_mindenfalu], show=True)
+    return None
+
+
+def add_to_mindenfalu(data, *_,**__):
+    with open("mindenfalu_full_list.txt", "a+") as mf_file:
+        mf_file.write(data["sources"]["reference_URL"].replace("https://www.arcanum.com", "")+"\n")
+    return data
+
+
+def make_clean_json_dumps_from_db():
+    shutil.rmtree("JsonDumps/")
+    os.makedirs("JsonDumps/")
+    os.remove("mindenfalu_full_list.txt")
+    process_all_db(functions=[write_to_file, add_to_mindenfalu])
+    with open('falu_ids.txt', mode='wt', encoding='utf-8') as my_file:
+        my_file.write('\n'.join([x.name.replace(".json", "") for x in (os.scandir("JsonDumps/")) if "json" in x.name]))
+
+
 def process_all_db(
         find='', limit=0, write=False, functions=None, attributes=None,
-        show=False, throttle=None, sort_field="_id", sort_asc=True):
+        show=False, throttle=None, sort_field="_id", sort_asc=True, aggregate=None):
     """
     Parse all documents in mongodb (optionally, matching a filter) and execute one or more functions on each.
     Arguments:
@@ -97,6 +126,7 @@ def process_all_db(
         throttle: in seconds. slow down processing (potentially useful if some sort of data scraping is involved)
         sort_field:  sort by field name
         sort_asc: sort ascending
+        aggregate: use a MongoDB aggregate to collect special datasets
     """
     if functions is None:
         functions = []
@@ -116,7 +146,11 @@ def process_all_db(
         for k, v in attributes["table"].items():
             print(f"| {k:{v}} ", end='')
         print("|")
-    for falu in collection.find(find).sort([(sort_field, sort_dir)]).limit(limit):
+    if aggregate:
+        iterator = collection.aggregate(aggregate)
+    else:
+        iterator = collection.find(find).sort([(sort_field, sort_dir)]).limit(limit)
+    for falu in iterator:
         # if show:
         #   print("Working on: %s" % (falu["_id"]))
         temp = falu
