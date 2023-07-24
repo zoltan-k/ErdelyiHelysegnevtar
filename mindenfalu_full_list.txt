@@ -1865,7 +1865,6 @@
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C2/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C3/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C4/
-/en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C5/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C6/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanate-9C7/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/f-99C/fanatele-capusului-9C8/
@@ -2799,7 +2798,6 @@
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncanii-de-jos-D95/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncanii-de-sus-D96/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncasprie-D8F/
-/en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncasprie-D97/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncavita-D98/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/lunceni-D99/
 /en/online-kiadvanyok/ErdelyHelysegnevTar-erdely-bansag-es-partium-torteneti-es-kozigazgatasi-helysegnevtara-1/telepulesek-1C9/l-CBB/luncoiu-de-jos-D9A/

@@ -229,7 +229,10 @@ def get_wiki(data, show=False, *_, **__):
 
     if 'wikipedia' in data['sources']:
         del data['sources']['wikipedia']
-    page = w.page(data["primary_name"] + ", " + data["county"])
+    if "commune" in data:
+        page = w.page(data["primary_name"] + "_(" + data["commune"] + "),_" + data["county"])
+    else:
+        page = w.page(data["primary_name"] + ", " + data["county"])
     if not page.exists():
         page = w.page(data["primary_name"].replace(" ", "-") + ", " + data["county"])
     if not page.exists():
@@ -237,7 +240,8 @@ def get_wiki(data, show=False, *_, **__):
     if not page.exists():
         page = w.page(data["primary_name"].replace(" ", "_") + ",_" + data["county"].replace(" ", "_"))
     if (not page.exists()) and ("commune" in data):
-        page = w.page(data["primary_name"] + "_(" + data["commune"] + "),_" + data["county"])
+        page = w.page(data["primary_name"] + ", " + data["county"])
+
     if not page.exists():
         for v in data["names"]["ro"]:
             sleep(1)
@@ -255,6 +259,11 @@ def get_wiki(data, show=False, *_, **__):
         print('URL: %s\nResponse: %d' % (url, data['wikipedia_response_status']))
     if data['wikipedia_response_status'] == 404:
         return None
+    return data
+
+
+def wiki_was_moved(data, *_, **__):
+    data['wikipedia_response_status'] = 300
     return data
 
 
@@ -487,13 +496,58 @@ def eliminate(data, show=False, *_, **__):
     collection.delete_one({"_id": data["_id"]})
 
 
+def clear_metadata(data, *_, **__):
+    """Remove existing metadata from the entry. Wikipedia, wikidata, fs fields"""
+    if "wikidata" in data:
+        del data["wikidata"]
+    if "fs" in data:
+        del data["fs"]
+    if "wikipedia" in data["sources"]:
+        del data["sources"]["wikipedia"]
+    if "wikipedia_response_status" in data:
+        del data["wikipedia_response_status"]
+    if "wikipedia_redirected" in data:
+        del data["wikipedia_redirected"]
+    return data
+
+
 def aggregate_looper(agg_data, show=False, agg_functions=None, agg_attributes=None, agg_write=False, *_, **__):
-    process_all_db(find={"wikidata.id": agg_data["_id"], "part-of": {"$exists": True}},
+    process_all_db(find={"wikidata.id": agg_data["_id"]},
                    functions=agg_functions,
                    attributes=agg_attributes,
                    show=show,
                    write=agg_write)
-    return None
+    return agg_data
+
+
+def aggregate_reduce_duplicate_wdids(agg_data, eliminate_it=False, show=False, *_, **__):
+    print(agg_data["prtof"])
+    for k in agg_data["villages"]:
+        if k["primary_name"] not in agg_data["prtof"]:
+            data = readme(k["village_id"])
+            answer = 'N'
+            write = False
+            if eliminate_it:
+                answer = input("Clear metadata from %s, %s (%s)? Y/[N]: " % (data["primary_name"], data["county"], data["_id"])).upper()
+            if answer == 'Y':
+                data = clear_metadata(data)
+                data = wiki_was_moved(data)
+                answer = 'N'
+                write = True
+            elif eliminate_it:
+                answer = input("Try to reset metadata from? Y/[N]:").upper()
+            if answer == 'Y':
+                data = clear_metadata(data)
+                data = get_wiki(data)
+                data = wikidata(data, try_wiki_url=True)
+                data = wikidata_commune_or_county(data)
+                data = fs_place_from_wd(data)
+                write = True
+            if write:
+                data = write_to_db(data, show=show)
+                data = write_to_file(data, show=show)
+            print(data)
+    return agg_data
 
 
 def get_places_primary(data, show=False, fuzzy=True, *_, **__):

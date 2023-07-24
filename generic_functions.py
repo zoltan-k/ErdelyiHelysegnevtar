@@ -138,11 +138,12 @@ def process_all_db(
     errors = []
     counter = 0
     valid_data = 0
-    print("DB processing starts")
+    if show:
+        print("DB processing starts")
     sort_dir = pymongo.DESCENDING
     if sort_asc:
         sort_dir = pymongo.ASCENDING
-    if "table" in attributes:
+    if ("table" in attributes) and ("no_header" not in attributes):
         for k, v in attributes["table"].items():
             print(f"| {k:{v}} ", end='')
         print("|")
@@ -165,8 +166,8 @@ def process_all_db(
             valid_data += 1
         if throttle:
             sleep(throttle)
-    print(f"Processed: {counter} | valid: {valid_data}")
     if show:
+        print(f"Processed: {counter} | valid: {valid_data}")
         print(errors)
     return errors
 

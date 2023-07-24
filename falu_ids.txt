@@ -1865,7 +1865,6 @@ fanate-9C1
 fanate-9C2
 fanate-9C3
 fanate-9C4
-fanate-9C5
 fanate-9C6
 fanate-9C7
 fanatele-capusului-9C8
@@ -2799,7 +2798,6 @@ luncani-D94
 luncanii-de-jos-D95
 luncanii-de-sus-D96
 luncasprie-D8F
-luncasprie-D97
 luncavita-D98
 lunceni-D99
 luncoiu-de-jos-D9A
